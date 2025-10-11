@@ -14,9 +14,6 @@ w=9
 num1=0
 num2=0
 
-#def add(x,y):
-#    return x+y
-
 
 order=0
 operation="Nothing"
