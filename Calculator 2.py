@@ -10,51 +10,76 @@ var.set(0)
 
 h=3
 w=9
-
 num1=0
 num2=0
-
-
-order=0
+order=1
 operation="Nothing"
 
-def add(x,y):
-    global order
+def C(n):
+    global num1
+    global num2
+
+    if order==1:
+        num1 = (str(num1)+str(n)).strip("0")
+        var.set(num1.strip("0"))
+    elif order ==2:
+        num2 = (str(num2)+str(n)).strip("0")
+        var.set(num2.strip("0"))
+    print(num1, num2)
+
+
+def ADD(x,y):
+    global num1
+    global num2
     global operation
-    order=1
-    operation="add"
-    print(operation)
+    global order
+    try:
+        if order==2:
+            return (str(float(x)+float(y))).strip(".0")
+        else:
+            order=2
+            operation="add"
+    except ZeroDivisionError:
+        return
+
 
 def equal(x,y):
-    print(operation)
+    global num1
+    global num2
+    global order
+    if num2==0:
+        return
     if operation=="add":
-        print(x)
-        print(y)
-        print(x+y)
-        var.set(x+y)
+        var.set((ADD(x,y)))
+    num1=(var.get().strip("0"))
+    num2=0
+    order=1
+
+def clear():
+    global num1
+    global num2
+    global operation
+    global order
+    num1=0
+    num2=0
+    order=1
+    operation="Nothing"
+    var.set(0)
+    print(num1,num2)
+
     
-def C(n):
-    if order==0:
-        global num1
-        num1 = n
-        var.set(num1)
-    elif order ==1:
-        global num2
-        print("Order = 1")
-        num2 = n
-        var.set(num2)
 
 
 
-fen.grid_rowconfigure(0, weight=1)
-fen.grid_rowconfigure(1, weight=1)
-fen.grid_rowconfigure(2, weight=1)
-fen.grid_rowconfigure(3, weight=1)
-fen.grid_rowconfigure(4, weight=1)
-fen.grid_columnconfigure(0, weight=2)
-fen.grid_columnconfigure(1, weight=2)
-fen.grid_columnconfigure(2, weight=2)
-fen.grid_columnconfigure(3, weight=2)
+fen.grid_rowconfigure(0, weight=1,uniform=1)
+fen.grid_rowconfigure(1, weight=1,uniform=1)
+fen.grid_rowconfigure(2, weight=1,uniform=1)
+fen.grid_rowconfigure(3, weight=1,uniform=1)
+fen.grid_rowconfigure(4, weight=1,uniform=1)
+fen.grid_columnconfigure(0, weight=2,uniform=1)
+fen.grid_columnconfigure(1, weight=2,uniform=1)
+fen.grid_columnconfigure(2, weight=2,uniform=1)
+fen.grid_columnconfigure(3, weight=2,uniform=1)
 
 
 Ecran=tk.Label(fen,textvariable=var,bg="#bdff91",anchor="e",font=5)
@@ -83,10 +108,13 @@ button8=tk.Button(fen,text="8",command=lambda :C(8))
 button8.grid(column=1, row=1,sticky="nswe",padx=5,pady=5)
 button9=tk.Button(fen,text="9",command=lambda :C(9))
 button9.grid(column=2, row=1,sticky="nswe",padx=5,pady=5)
-buttonp=tk.Button(fen,text="+",command=lambda :add(num1,num2))
+
+buttonp=tk.Button(fen,text="+",command=lambda :ADD(num1,num2))
 buttonp.grid(column=3, row=1,sticky="nswe",padx=5,pady=5)
 buttone=tk.Button(fen,text="=",command=lambda :equal(num1,num2))
 buttone.grid(column=3, row=4,sticky="nswe",padx=5,pady=5)
+buttonc=tk.Button(fen,text="C",font=10,fg="red",command=lambda :clear())
+buttonc.grid(column=0, row=4,sticky="nswe",padx=5,pady=5)
 
 
 fen.mainloop()
