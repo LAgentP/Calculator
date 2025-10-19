@@ -1,5 +1,4 @@
 import tkinter as tk
-import time
 
 #First, let's build the UI for our calculator
 
@@ -182,35 +181,37 @@ def equal(x,y):
     y=float(y)
     
     #We check what operation we need to do
-    if operation=="add":                            
-        var.set(str(add(x,y)).removesuffix(".0"))           #.removesuffix() only works with string. It removes the ".0" of a float for a cleaner display
-
+    if operation=="add":
+        result=add(x,y)                            
+                   
     elif operation=="sub":
-        var.set(str(add(x,-y)).removesuffix(".0"))          #Same operation than before, but with -y
+        result=sub(x,-y)                        #Same operation than before, but with -y to substract
 
     elif operation=="mul":
-        var.set(str(mul(x,y)).removesuffix(".0"))
+        result=mul(x,y)
 
     elif operation=="div":
         try:
-            var.set(str(mul(x,1/y)).removesuffix(".0"))     #Same operation than before, but with 1/y
+            result=mul(x,1/y)                   #Same operation than before, but with 1/y to divide
 
-        except ZeroDivisionError:                           #In case we divide by 0
-            var.set("ZeroDivisionError")                    #We display it on screen
+        except ZeroDivisionError:               #In case we divide by 0
+            result="ZeroDivisionError"          #We want to display it on screen
 
     elif operation=="pow":
-        var.set(str(pow(x,y)).removesuffix(".0"))
+        result=pow(x,y)
 
+    var.set(str(result).removesuffix(".0"))     #We display our result on screen
+                                                #.removesuffix() only works with string. It removes the ".0" of a float for a cleaner display
 
-    if var.get()=="ZeroDivisionError":                      #If we divided by 0, we simply reset num1 value
+    if var.get()=="ZeroDivisionError":          #If we divided by 0, we simply reset num1 value
         num1="0"
-    else:                                                   #If not, we assign its value to our result
+    else:                                       #If not, we assign its value to our result
         num1=(var.get())
 
-    num2=0                                                #Since we finished our operation, we don't need num2 anymore
-    order=1                                                 #We reset order to 1, so the next buttons we pressed get assigned to num1
-    operation="Nothing"                                     #We finished our current operation
-    end=True                                                #We inform C() that we just finished our operation (see C() for more explanation)
+    num2=0                                      #Since we finished our operation, we don't need num2 anymore
+    order=1                                     #We reset order to 1, so the next buttons we pressed get assigned to num1
+    operation="Nothing"                         #We finished our current operation
+    end=True                                    #We inform C() that we just finished our operation (see C() for more explanation)
 
 
 #This function is called when we press "C" on our calculator
