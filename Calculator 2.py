@@ -49,7 +49,7 @@ screen.grid(row=0,columnspan=4,**grid_dict)                                 #we 
 #For each button, we assign a row, a column, but most importantly a function that we'll need for our calculations
 
 #1st row :
-pow=tk.Button(fen,text="^",**button_dict,command=lambda :OPP(4))
+pow=tk.Button(fen,text="^",**button_dict,command=lambda :OPP("pow"))
 pow.grid(column=0, row=1,**grid_dict)
 
 #2nd row :
@@ -62,7 +62,7 @@ button8.grid(column=1, row=2,**grid_dict)
 button9=tk.Button(fen,text="9",**button_dict,command=lambda :C(9))
 button9.grid(column=2, row=2,**grid_dict)
 
-add=tk.Button(fen,text="+",**button_dict,command=lambda :OPP(0))
+add=tk.Button(fen,text="+",**button_dict,command=lambda :OPP("add"))
 add.grid(column=3, row=2,**grid_dict)
 
 #3rd row :
@@ -75,7 +75,7 @@ button5.grid(column=1, row=3,**grid_dict)
 button6=tk.Button(fen,text="6",**button_dict,command=lambda :C(6))
 button6.grid(column=2, row=3,**grid_dict)
 
-sub=tk.Button(fen,text="-",**button_dict,command=lambda :OPP(1))
+sub=tk.Button(fen,text="-",**button_dict,command=lambda :OPP("sub"))
 sub.grid(column=3, row=3,**grid_dict)
 
 #4rd row :
@@ -89,7 +89,7 @@ button2.grid(column=1, row=4,**grid_dict)
 button3=tk.Button(fen,text="3",**button_dict,command=lambda :C(3))
 button3.grid(column=2, row=4,**grid_dict)
 
-mul=tk.Button(fen,text="*",**button_dict,command=lambda :OPP(2))
+mul=tk.Button(fen,text="*",**button_dict,command=lambda :OPP("mul"))
 mul.grid(column=3, row=4,**grid_dict)
 
 #5th row :
@@ -102,7 +102,7 @@ button0.grid(column=1, row=5,**grid_dict)
 equal=tk.Button(fen,text="=",**button_dict,command=lambda :equal(num1,num2))
 equal.grid(column=2, row=5,**grid_dict)
 
-div=tk.Button(fen,text="÷",**button_dict,command=lambda :OPP(3))
+div=tk.Button(fen,text="÷",**button_dict,command=lambda :OPP("div"))
 div.grid(column=3, row=5,**grid_dict)
 
 
@@ -149,37 +149,23 @@ def C(n):
 
 
 #This function is called when we press an operation on the calculator (i specifies which one)
-def OPP(i):
+def OPP(x):
     global num1
     global num2
     global operation
     global order
 
-    try:
-        if num1==0 and i in(2,3):                   #We don't want some buttons to have any impact as long as num1 doesn't have a value
-            return                                  #That way, pressing "*" then "3" only outputs "3"
+    if num1==0 and operation in("mul","div"):   #We don't want some buttons to have any impact as long as num1 doesn't have a value
+        return                                  #That way, pressing "*" then "3" only outputs "3"
+    
+    if order==1:                                #order==1 if no operation has been chosen yet
+        order=2                                 #We inform the code that an operation has been chosen
+
+    elif order==2:                              #order==2 if an operation has been chosen. That means we want to do another operation after the first one
+        equal(num1,num2)                        #So we have to calculate the result of the first operation before doing anything
+        order=2                                 #equal() changes the order to 1, but we know the user wants to do another calculation, so we put it back to 2
         
-        if order==1:                                #Order==1 if no operation has been chosen yet
-            order=2                                 #We inform the code that an operation has been chosen
-
-        elif order==2:                              #Order==2 if an operation has been chosen. That means we want to do another operation after the first one
-            equal(num1,num2)                        #So we have to calculate the result of the first operation before doing anything
-            order=2
-        
-
-        if i==0:                                    #We store the information of which button we pressed in operation
-            operation="add"
-        elif i==1:
-            operation="sub"
-        elif i==2:
-            operation="mul"
-        elif i==3:
-            operation="div"
-        elif i==4:
-            operation="pow"
-
-    except (ZeroDivisionError,ValueError):  #In case something goes wrong
-        return
+    operation=x                                 #We store the information of which button we pressed in operation
 
 #This function is called when we press "=", or by OPP() (see above)
 def equal(x,y):
