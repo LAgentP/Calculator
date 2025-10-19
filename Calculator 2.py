@@ -1,4 +1,5 @@
 import tkinter as tk
+import math as mt
 
 #First, let's build the UI for our calculator
 
@@ -50,6 +51,12 @@ screen.grid(row=0,columnspan=4,**grid_dict)                                 #we 
 #1st row :
 pow=tk.Button(fen,text="^",**button_dict,command=lambda :OPP("pow"))
 pow.grid(column=0, row=1,**grid_dict)
+
+fac=tk.Button(fen,text="!",**button_dict,command=lambda :OPP("fac"))
+fac.grid(column=1, row=1,**grid_dict)
+
+sqrt=tk.Button(fen,text="√",**button_dict,command=lambda :OPP("sqrt"))
+sqrt.grid(column=2, row=1,**grid_dict)
 
 #2nd row :
 button7=tk.Button(fen,text="7",**button_dict,command=lambda :C(7))
@@ -118,28 +125,52 @@ order=1                         #-> To track if the numbers should go into num1 
 operation="Nothing"             #-> To track which calculations we're doing
 end=False                       #-> To track wether we just finished a calculation or not
 
+ErrorList=["ZeroDivisionError","NumberNotInteger","TooLargeNumber","NegativeSquareRoot"]     #We also create a list of potential errors, that we can call later
+
 
 #As well as our basic operations
-def add(x,y):                   #For additions and substractions
+def add(x,y):                       #For additions and substractions
     return x+y
-def mul(x,y):                   #For multiplications and divisions
+
+def mul(x,y):                       #For multiplications and divisions
     return x*y
-def pow(x,y):                   #For powers
+
+def pow(x,y):                       #For powers
     return x**y
+
+def fac(x):                         #For factorials
+    if x>3000:                      #To avoid burning computers
+        return "TooLargeNumber"
+    
+    if int(x)==0 or x%int(x)!=0:    #We check if the number is whole (ie remainder of the division of (x) by (x rounded down) == 0)
+        return "NumberNotInteger"   #If not, we stop here (I don't wanna dive into factorials for real numbers yet) and return the error
+    else :
+        x=int(x)                    #If it is, we convert it to an integer for the following loop   
+    
+    fact=1
+    for i in range (1,x+1):
+        fact=fact*i
+    return(fact)
+
+def sqrt(x):                        #For square roots
+    if x<0:
+        return "NegativeSquareRoot" 
+    else:
+        return mt.sqrt(x)
 
 
 #This function is called when we press the number "n" on the calculator
 def C(n):
-    global num1                                 #For each function, we need to make some variables global, to edit them and save
-    global num2                                 #their values across multiple functions
+    global num1                                 #For each function, we need to make some variables global, to edit them and save their values across multiple functions
+    global num2                                 
     global end
 
     if order==1:                                #When order==1, the buttons we press only affects num1
-        if end==True:                           #If we pressed "=" right before that, we don't want num1 to be saved
+        if end==True:                           #If we pressed "=" right before that, we don't want num1 to be saved, we want to start a fresh new operation
             num1="0"                            #so we put its value to 0
             end=False                           #We put end to False so that num1 doesn't get reset when we write 2-digits number
 
-        num1 = f"{num1}{n}".removeprefix("0")   #num1 is an fstring to add the number we pressed to the end of our current value. We also remove useless 0
+        num1 = f"{num1}{n}".removeprefix("0")   #num1 is an fstring to add the number we pressed to the end of our current value. We also remove useless 0 in front of it
         var.set(num1)                           #we display num1 on screen
 
     else:                                       #Same thing with num2 when order==2
@@ -147,24 +178,30 @@ def C(n):
         var.set(num2)
 
 
-#This function is called when we press an operation on the calculator (i specifies which one)
+#This function is called when we press an operation on the calculator
 def OPP(x):
-    global num1
-    global num2
     global operation
     global order
-
-    if num1==0 and operation in("mul","div"):   #We don't want some buttons to have any impact as long as num1 doesn't have a value
-        return                                  #That way, pressing "*" then "3" only outputs "3"
     
-    if order==1:                                #order==1 if no operation has been chosen yet
-        order=2                                 #We inform the code that an operation has been chosen
+    if num1==0 and operation in("Nothing"):     #As long as num1 doesn't have a value, we don't allow the user to perform any operation
+        return                                  #However, pressing 0 on the calculator will make num1 a string, and not a float anymore
 
     elif order==2:                              #order==2 if an operation has been chosen. That means we want to do another operation after the first one
-        equal(num1,num2)                        #So we have to calculate the result of the first operation before doing anything
-        order=2                                 #equal() changes the order to 1, but we know the user wants to do another calculation, so we put it back to 2
+        equal(num1,num2)                        #So we have to calculate the result of the first operation before doing anything else
+                                         
+
+        if var.get() not in ErrorList:          #Same thing for operation, since equal() also resets it, so we put its value back to what it was
+            operation=x                         
+        else:                                   #However, if an error occured, we let it reset, to start new operations from scratch
+            return
         
+        order=2                                 #equal() changes the order to 1, but we know the user wants to do another calculation and that no errors occured, so we put it back to 2
+
+    elif order==1:                              #order==1 if no operation has been chosen yet
+        order=2                                 #We inform the code that an operation has been chosen
+
     operation=x                                 #We store the information of which button we pressed in operation
+
 
 #This function is called when we press "=", or by OPP() (see above)
 def equal(x,y):
@@ -174,37 +211,47 @@ def equal(x,y):
     global operation
     global end
 
-    if num2==0 and operation!="pow":        #We don't want to do any calculations if num2 is still equal to its base value (a float), except for power since x^0=1
+    if num2==0 and operation not in ("fac","sqrt"):     #We don't want to do any calculations if num2 is still equal to its base value (a float), except for single variable operations (num2 value has no effect on them)
         return
 
-    x=float(x)                              #We first need to convert our variables to float to make calculations
+    x=float(x)          #We first need to convert our variables to float to make calculations
     y=float(y)
+    result=0
     
-    #We check what operation we need to do
+    #We then do the desired operation
+
     if operation=="add":
         result=add(x,y)                            
                    
     elif operation=="sub":
-        result=sub(x,-y)                        #Same operation than before, but with -y to substract
+        result=add(x,-y)                    #Same operation than before, but with -y to substract
 
     elif operation=="mul":
         result=mul(x,y)
 
     elif operation=="div":
         try:
-            result=mul(x,1/y)                   #Same operation than before, but with 1/y to divide
+            result=mul(x,1/y)               #Same operation than before, but with 1/y to divide
 
-        except ZeroDivisionError:               #In case we divide by 0
-            result="ZeroDivisionError"          #We want to display it on screen
+        except ZeroDivisionError:           #In case we divide by 0
+            result="ZeroDivisionError"      #We want to display it on screen
 
     elif operation=="pow":
         result=pow(x,y)
 
+    elif operation=="fac":
+        result=fac(x)
+
+    elif operation=="sqrt":
+        result=sqrt(x)
+
+
     var.set(str(result).removesuffix(".0"))     #We display our result on screen
                                                 #.removesuffix() only works with string. It removes the ".0" of a float for a cleaner display
 
-    if var.get()=="ZeroDivisionError":          #If we divided by 0, we simply reset num1 value
-        num1="0"
+    if var.get() in ErrorList:          
+        num1=0                                  #If an error occured, we simply reset num1 value
+        operation="Nothing"                     #We also reset operation, since the user might have pressed an operation right before the error. In this case, we don't want to take it into account
     else:                                       #If not, we assign its value to our result
         num1=(var.get())
 
